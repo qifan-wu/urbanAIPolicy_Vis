@@ -1,0 +1,23 @@
+{
+    "version": "1.0",
+    "configurations": [
+        {
+            "name": "Python: Flask",
+            "type": "python",
+            "request": "launch",
+            "python": "${workspaceFolder}/.venv/bin/python", // replace with your python path
+            "module": "flask",
+            "env": {
+                "FLASK_APP": "app.py", // replace with your file name
+                "FLASK_ENV": "development"
+            },
+            "args": [
+                "run",
+                "--no-debugger",
+                "--no-reload",
+                "--port=8080"
+            ],
+            "jinja": true
+        }
+    ]
+}
