@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Highlight Table</title>
+    <style>
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 8px;
+        }
+        table {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h2>Highlighted Files for {{ category }}</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Filename</th>
+                <th>Category</th>
+                <th>match_count</th>
+                <th>Open Highlighted PDF</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in data %}
+            <tr>
+                <td>{{ row.filename }}</td>
+                <td>{{ row.category }}</td>
+                <td>{{ row.match_count }}</td>
+                <td><a href="{{ row.file_link }}" target="_blank">View Highlighted PDF</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

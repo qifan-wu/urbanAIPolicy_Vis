@@ -3,20 +3,12 @@ from flask import Flask, request, send_file, abort
 import fitz  # PyMuPDF
 import io
 import os
-
+from constants import CATEGORY_COLORS
 app = Flask(__name__, static_folder="static", template_folder="templates")
 
 @app.route("/")
 def home():
     return render_template("index.html")
-
-# @app.route("/data/<path:filename>")
-# def data_files(filename):
-#     return send_from_directory("static/data", filename)
-
-# @app.route("/pdfs/<path:filename>")
-# def serve_pdf(filename):
-#     return send_from_directory("static/pdfs", filename)
 
 data = {
         'test.pdf':
@@ -54,29 +46,38 @@ data = {
             }
         }
 
-CATEGORY_COLORS = {
-    'ai_associated': '1 0 0',   # red
-    'ai_associated_fuzzy': '1 0 0',   # red
-    'ai_vendors': '0 0 1',    # blue
-    'ai_general': '0 1 0',   # green
-    'test': '0 1 0'   # green
-}
 
 
-@app.route("/highlight/<file_name>/<category>", methods=["GET"])
-def highlight_pdf(file_name, category):
+from utils import get_result_by_category, get_text_by_file_category
+
+# http://127.0.0.1:8080/Data%20Privacy%20and%20Security
+@app.route("/<category>")
+def result_table(category):
+    df_category = get_result_by_category(category)
+    df_category["file_link"] = df_category["filename"].apply(
+        lambda fname: f"/highlight/{fname}/{category}"
+    )
+    df_category["category"] = category
+    data = df_category.to_dict(orient="records")
+    return render_template("/category_table.html", data=data, category=category)
+
+
+@app.route("/highlight/<filename>/<category>", methods=["GET"])
+def highlight_pdf(filename, category):
     if category not in CATEGORY_COLORS:
         return abort(404, description="Category not found for this file.")
 
-    sentences = data[file_name][category]
+    # sentences = data[filename][category]
+    relevant_lines = get_text_by_file_category(filename, category)
+
     color_str = CATEGORY_COLORS.get(category)
     rgb_color = tuple(map(float, color_str.split()))
 
-    doc = read_pdf(file_name)
+    doc = read_pdf(filename)
 
-    for sentence in sentences:
+    for line in relevant_lines:
         for page in doc:
-            matches = page.search_for(sentence, quads=True)  # more precise layout match
+            matches = page.search_for(line, quads=True)  # more precise layout match
             for match in matches:
                 highlight = page.add_highlight_annot(match)
                 highlight.set_colors(stroke=rgb_color)
@@ -95,10 +96,10 @@ def highlight_pdf(file_name, category):
         as_attachment=False)
 
 
-def read_pdf(file_name):
+def read_pdf(filename):
     """Reads a PDF file and returns pymupdf.Document."""
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    pdf_path = os.path.join(BASE_DIR, 'static', 'pdfs', os.path.basename(file_name))
+    pdf_path = os.path.join(BASE_DIR, 'static', 'pdfs', os.path.basename(filename))
 
     if not os.path.exists(pdf_path):
         return abort(404, description="PDF file not found.")
@@ -107,42 +108,7 @@ def read_pdf(file_name):
 
     return doc
 
-@app.route("/highlight_fuzzy/<file_name>/<category>", methods=["GET"])
-def highlight_fuzzy_pdf(file_name, category):
-    sentences = data[file_name][category]
-    print(sentences)
-    color_str = CATEGORY_COLORS.get(category)
-    pdf_path = os.path.join(os.path.join('static', 'pdfs'), os.path.basename(file_name))
-
-    if category not in CATEGORY_COLORS:
-        return abort(404, description="Category not found for this file.")
-    if not os.path.exists(pdf_path):
-        return abort(404, description="PDF file not found.")
-
-    doc = fitz.open(pdf_path)
-    rgb_color = tuple(map(float, color_str.split()))
-
-    for sentence in sentences:
-        for page in doc:
-            matches = page.search_for(sentence, quads=True)  # more precise layout match
-            for match in matches:
-                highlight = page.add_highlight_annot(match)
-                highlight.set_colors(stroke=rgb_color)
-                highlight.update()
-
-    # Save to in-memory buffer
-    output_buffer = io.BytesIO()
-    doc.save(output_buffer)
-    output_buffer.seek(0)
-    doc.close()
-
-    return send_file(
-        output_buffer,
-        mimetype='application/pdf',
-        download_name=f'highlighted_pdf.pdf',
-        as_attachment=False)
 
 
-RESULT_DB_FILE = 'ai_policy_analysis_local.db'
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8080, debug=True)
