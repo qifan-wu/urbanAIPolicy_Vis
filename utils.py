@@ -37,7 +37,6 @@ def get_result_by_category(category):
 
     # # Group chunk_texts by filename
     # grouped_df = df_category.groupby("filename")["chunk_text"].agg(list).reset_index()
-    print(df_category)
     return df_category
 
 
@@ -73,18 +72,20 @@ def get_text_by_file_category(filename, category):
     # Clean each chunk: split on \n, strip whitespace, collapse internal spaces, drop empty lines
     cleaned_lines = []
     for chunk in df_category["chunk_text"]:
+        print(chunk)
+        print("===")
         lines = chunk.split('\n')
         for line in lines:
             normalized = re.sub(r'\s+', ' ', line.strip())
+            normalized = re.sub(r'-$', '', normalized) #remove trailing -
             if normalized:
-                cleaned_lines.append(normalized)
+                if len(normalized) > 1:
+                    cleaned_lines.append(normalized)
     print(len(cleaned_lines))
     return cleaned_lines
     # print(category_text)
     # Save the grouped DataFrame to a CSV file
     # return category_text
-
-
 
 
 if __name__ == "__main__":

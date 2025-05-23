@@ -8,49 +8,13 @@ app = Flask(__name__, static_folder="static", template_folder="templates")
 
 @app.route("/")
 def home():
-    return render_template("index.html")
-
-data = {
-        'test.pdf':
-            {
-            'ai_associated':[
-                'All City departments. Vendors, contractors, and volunteers who operate on behalf of the City are also subject to this policy',
-                'If a technology that has already been approved for use in the City adds or incorporates generative AI capabilities, no additional approval is required to use those capabilities, however all other aspects in this policy apply to said use.'
-                ],
-            'ai_associated_fuzzy':[
-                'All City departments. vendors, contractors and volunters for the city should also obbey this policy',
-                ],
-            'ai_vendors':[
-                'Documentation of HITL reviews shall be retained according to the appropriate records retention schedule.'
-                ],
-            'ai_general':[
-                '''1. Acquisition of Generative AI Technology
-                1.1. Consistent with the City’s standards for Acquisition of Technology Resources, City employees may be authorized to use pre-approved generative AI software tools or they may request a nonstandard acquisition of generative AI software through Seattle IT’s current request process.
-                1.2. Seattle IT shall review exception requests according to its current risk and impact methodology,
-                which shall include specific review criteria for generative AI technology. Seattle IT shall either
-                approve or deny a request according to its criteria.
-                1.3. The City’s standard for technology acquisition applies to all technology, including free-to-use
-                software or software-as-a-service tools.
-                '''
-            ],
-            'test': [
-                '''prior to the use of a Generative AI tool, especially uses that will
-
-                analyze datasets or be used to inform decisions or policy. As per the objectives of the RSJ
-                program, the RET should document the steps the department will take to evaluate AI-generated
-
-                content to ensure that its output is accurate and free of discrimination and bias against
-                protected classes.
-                '''
-            ]
-            }
-        }
-
-
+    return render_template("/index.html")
 
 from utils import get_result_by_category, get_text_by_file_category
 
 # http://127.0.0.1:8080/Data%20Privacy%20and%20Security
+# http://127.0.0.1:8080/Public%20Service%20and%20Citizen%20Engagement
+# http://127.0.0.1:8080/highlight/CTO-Policy-Advisory-Team-on-Generative-AI-Report.pdf__seattlegov-72c2c12bc9b200fd940d82b0d0b2e7fe.pdf/Public%20Service%20and%20Citizen%20Engagement
 @app.route("/<category>")
 def result_table(category):
     df_category = get_result_by_category(category)
@@ -67,7 +31,12 @@ def highlight_pdf(filename, category):
     if category not in CATEGORY_COLORS:
         return abort(404, description="Category not found for this file.")
 
-    # sentences = data[filename][category]
+    # http://127.0.0.1:8080/highlight/City-of-Seattle-Generative-Artificial-Intelligence-Policy.pdf__seattlegov-b6eaf5444e4f4ba7a759bd75016e58bd.pdf/Public%20Service%20and%20Citizen%20Engagement
+    # relevant_lines = ['''
+    # Acquisition of Generative AI Technology 1.1. Consistent with the City’s standards for Acquisition of Technology Resources, City employees may be authorized to use pre-approved g
+    # ''']
+    # relevant_lines = ["AI"]
+
     relevant_lines = get_text_by_file_category(filename, category)
 
     color_str = CATEGORY_COLORS.get(category)
@@ -75,13 +44,7 @@ def highlight_pdf(filename, category):
 
     doc = read_pdf(filename)
 
-    for line in relevant_lines:
-        for page in doc:
-            matches = page.search_for(line, quads=True)  # more precise layout match
-            for match in matches:
-                highlight = page.add_highlight_annot(match)
-                highlight.set_colors(stroke=rgb_color)
-                highlight.update()
+    highlight_lines_forward(doc, relevant_lines, rgb_color)
 
     # Save to in-memory buffer
     output_buffer = io.BytesIO()
@@ -94,6 +57,64 @@ def highlight_pdf(filename, category):
         mimetype='application/pdf',
         download_name=f'highlighted_pdf.pdf',
         as_attachment=False)
+
+def highlight_lines_forward(doc, lines, rgb_color):
+    # for line in lines:
+    #     for page in doc:
+    #         matches = page.search_for(line, quads=True, flags=0)  # case sensitive
+    #         for match in matches:
+    #             highlight = page.add_highlight_annot(match)
+    #             highlight.set_colors(stroke=rgb_color)
+    #             highlight.update()
+
+    page_index_current = 0
+    num_pages = len(doc)
+
+    # search in page forward direction
+    for line in lines:
+        for p_i in range(page_index_current, num_pages):
+            page = doc[p_i]
+            matches = page.search_for(line, quads=True)
+            if matches:
+                for match in matches:
+                    highlight = page.add_highlight_annot(match)
+                    highlight.set_colors(stroke=rgb_color)
+                    highlight.update()
+                p_index_current = p_i
+                break
+
+
+# def highlight_pdf(filename, category):
+#     if category not in CATEGORY_COLORS:
+#         return abort(404, description="Category not found for this file.")
+
+#     # sentences = data[filename][category]
+#     relevant_lines = get_text_by_file_category(filename, category)
+
+#     color_str = CATEGORY_COLORS.get(category)
+#     rgb_color = tuple(map(float, color_str.split()))
+
+#     doc = read_pdf(filename)
+
+#     for line in relevant_lines:
+#         for page in doc:
+#             matches = page.search_for(line, quads=True)  # more precise layout match
+#             for match in matches:
+#                 highlight = page.add_highlight_annot(match)
+#                 highlight.set_colors(stroke=rgb_color)
+#                 highlight.update()
+
+#     # Save to in-memory buffer
+#     output_buffer = io.BytesIO()
+#     doc.save(output_buffer)
+#     output_buffer.seek(0)
+#     doc.close()
+
+#     return send_file(
+#         output_buffer,
+#         mimetype='application/pdf',
+#         download_name=f'highlighted_pdf.pdf',
+#         as_attachment=False)
 
 
 def read_pdf(filename):
