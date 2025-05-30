@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Select a category</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+    <h2>Category-Based Highlight Viewer</h2>
+
+    <div class="container">
+        <!-- Left Panel: Dropdown -->
+        <div class="searchbox">
+            <form id="category-form">
+                <label for="category">Choose a category:</label>
+                <select id="category" name="subcategory">
+                    <option disabled selected value>-- select --</option>
+                    {% for option in all_categories %}
+                        <option value="{{ option }}">{{ option }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+
+        <!-- Right Panel: Table -->
+        <div class="cat_table" id="cat_table">
+            <!-- <p>Select a category to view the table.</p> -->
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("category").addEventListener("change", function() {
+            const selected = this.value;
+            if (selected) {
+                fetch("/" + encodeURIComponent(selected))
+                    .then(response => response.text())
+                    .then(html => {
+                        document.getElementById("cat_table").innerHTML = html;
+                    });
+            }
+        });
+    </script>
+</body>
+</html>

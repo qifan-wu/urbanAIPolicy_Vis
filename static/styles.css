@@ -7,3 +7,36 @@ body {
 section {
   margin-bottom: 2em;
 }
+
+.container {
+  display: flex;
+  gap: 20px;
+}
+
+.container {
+  display: flex;
+  gap: 20px;
+}
+
+.searchbox {
+  width: 30%;
+  border-right: 1px solid #ccc;
+  padding-right: 10px;
+}
+
+.cat_table {
+  width: 70%;
+  padding-left: 10px;
+}
+
+table,
+th,
+td {
+  border: 1px solid black;
+  border-collapse: collapse;
+  padding: 8px;
+}
+
+table {
+  width: 100%;
+}

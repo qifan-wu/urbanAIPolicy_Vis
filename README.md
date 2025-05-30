@@ -1,6 +1,9 @@
 ## Introduction
 This is a web tool to visualize AI-related urban planning document
 
+match_count: how many chunks are identified as the given subcategory-related
+
+
 ## Steps for setup
 ### Local database setup
 Download all the original PDF document from Dropbox source_pdf folder and save it in local folder static/pdfs

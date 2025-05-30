@@ -10,8 +10,12 @@ app = Flask(__name__, static_folder="static", template_folder="templates")
 
 
 @app.route("/")
-def home():
-    return render_template("/index.html", all_categories=SUBCATEGORIES)
+def main():
+    return render_template("/main.html", all_categories=SUBCATEGORIES)
+
+# @app.route("/selectbox")
+# def selectbox():
+#     return render_template("/selectbox.html", all_categories=SUBCATEGORIES)
 
 @app.route("/<category>")
 def result_table(category):
