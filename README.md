@@ -5,6 +5,7 @@ This is a web tool to visualize AI-related urban planning document
 A search box for user to select a category and return a table of relavant documents in format of a table, with information of document filename, match_count (how many chunks are identified as the given subcategory-related) and a link to open the pdf with category-relavant highlights
 
 ### Code Structure
+<pre>```
 .
 ├── Dockerfile <!-- dockerfile for fly.io launch -->
 ├── app.py <!-- Flask app -->
@@ -24,10 +25,13 @@ A search box for user to select a category and return a table of relavant docume
 └── templates <!-- Templates for html wrapping -->
     ├── main.html
     └── category_table.html
+```</pre>
+
+<pre> ``` . ├── Dockerfile <!-- dockerfile for fly.io launch --> ├── app.py <!-- Flask app --> ├── utils.py <!-- user functions --> ├── constants.py <!-- constants such as folder location, keywords, highlight color --> ├── fly.toml ├── launch.json <!-- For debugging --> ├── requirements.txt <!-- All the needed packages --> ├── static │ ├── data │ │ └── ai_policy_analysis_local_0526.db <!-- Result database from pipeline --> │ └── pdfs <!-- Original documents in PDF --> │ │ ├── license-plate-readers_final-sir.pdf__seattlegov-5ba9b460d8306891aad00231650afb24. │ │ ├── travel-time-data-collection-handbook. │ │ └── ... │ └── style.css └── templates <!-- Templates for html wrapping --> ├── main.html └── category_table.html ``` </pre>
 
 ## Steps for setup
 ### Local database setup
-1. Git clone https://github.com/qifan-wu/urbanAIPolicy_Vis.git to local directory
+1. Git clone https://github.com/qifan-wu/urbanAIPolicy_Vis.git to local directory, then `git checkout wrapup`
 2. Download all the original PDF document from Dropbox source_pdf folder and save it in local folder static/pdfs
 3. Download ai_policy_analysis_local.db and save it in
 static/data
@@ -50,11 +54,13 @@ If you install other dependencies, run in terminal:
 `pip freeze > requirements.txt`
 
 ### Deploy it on Fly.io
+Sign up for fly.io account at https://fly.io/dashboard
+
 First time launch:
-run `fly launch` in terminal
-then run `fly deploy`
+`fly launch`
+
 Whenever you want to update your app
 run `fly deploy` in terminal
 
-Launch: See instructions details from https://fly.io/docs/reference/fly-launch/
+See instructions details from https://fly.io/docs/reference/fly-launch/
 
