@@ -1,33 +1,31 @@
 ## Introduction
 This is a web tool to visualize AI-related urban planning document
 
-### Function
+## Functions
 A search box for user to select a category and return a table of relavant documents in format of a table, with information of document filename, match_count (how many chunks are identified as the given subcategory-related) and a link to open the pdf with category-relavant highlights
 
-### Code Structure
+## Code Structure
 <pre>```
 .
-├── Dockerfile <!-- dockerfile for fly.io launch -->
-├── app.py <!-- Flask app -->
-└── utils.py <!-- user functions -->
-├── constants.py <!-- constants such as folder location, keywords, highlight color -->
+├── Dockerfile  # dockerfile for fly.io launch
+├── app.py  # Flask app
+└── utils.py    # user functions
+├── constants.py    # constants such as folder location, keywords, highlight color
 ├── fly.toml
-├── launch.json <!-- For dubugging -->
-├── requirements.txt <!-- All the needed packages -->
+├── launch.json     # For dubugging
+├── requirements.txt    # All the needed packages
 ├── static
 │   ├── data
-│   │   └── ai_policy_analysis_local_0526.db <!-- Result databse from pipeline -->
-│   └── pdfs <!-- Original documents in PDF -->
+│   │   └── ai_policy_analysis_local_0526.db    # Result databse from pipeline
+│   └── pdfs    # Original documents in PDF
 │   │    ├── license-plate-readers_final-sir.pdf__seattlegov-5ba9b460d8306891aad00231650afb24.
-│   │   ├── travel-time-data-collection-handbook.
-│   │   └──  ...
+│   │    ├── travel-time-data-collection-handbook.
+│   │    └──  ...
 │   └── style.css
-└── templates <!-- Templates for html wrapping -->
+└── templates   # Templates in html
     ├── main.html
     └── category_table.html
 ```</pre>
-
-<pre> ``` . ├── Dockerfile <!-- dockerfile for fly.io launch --> ├── app.py <!-- Flask app --> ├── utils.py <!-- user functions --> ├── constants.py <!-- constants such as folder location, keywords, highlight color --> ├── fly.toml ├── launch.json <!-- For debugging --> ├── requirements.txt <!-- All the needed packages --> ├── static │ ├── data │ │ └── ai_policy_analysis_local_0526.db <!-- Result database from pipeline --> │ └── pdfs <!-- Original documents in PDF --> │ │ ├── license-plate-readers_final-sir.pdf__seattlegov-5ba9b460d8306891aad00231650afb24. │ │ ├── travel-time-data-collection-handbook. │ │ └── ... │ └── style.css └── templates <!-- Templates for html wrapping --> ├── main.html └── category_table.html ``` </pre>
 
 ## Steps for setup
 ### Local database setup
