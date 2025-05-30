@@ -1,7 +1,10 @@
 /.venv
+.DS_Store
+/.DS_Store
+__pycache__/
 static/
 /static/pdfs/*
 /static/data/*
 /elasticsearch-9.0.0-darwin-x86_64.tar.gz
 /elasticsearch-9.0.0/*
-/.DS_Store
+
