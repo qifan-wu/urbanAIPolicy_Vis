@@ -30,11 +30,21 @@ A search box for user to select a category and return a table of relavant docume
 ## Steps for setup
 ### Local database setup
 1. Git clone https://github.com/qifan-wu/urbanAIPolicy_Vis.git to local directory, then `git checkout wrapup`
+
 2. Download all the original PDF document from Dropbox source_pdf folder and save it in local folder static/pdfs
+
 3. Download ai_policy_analysis_local.db and save it in
 static/data
 
-4. (if needed) Update the constant variable SUBCATEGORIES if it's changed, you can get all the unique subcategories by running the following code in a seperate python file
+4. Install Dependencies
+
+Install dependencies using:
+`pip install -r requirements.txt`
+
+If you install new dependencies, run in terminal:
+`pip freeze > requirements.txt`
+
+5. (if needed) Update the constant variable SUBCATEGORIES if it's changed, you can get all the unique subcategories by running the following code in a seperate python file
 ```
 conn = sqlite3.connect(RESULT_DB_FILE)
 cursor = conn.cursor()
@@ -46,12 +56,7 @@ df = pd.read_sql_query(query, conn)
 subcategories = df['subcategory'].tolist()
 ```
 
-### Install Dependencies
-Install dependencies from:
-If you install other dependencies, run in terminal:
-`pip freeze > requirements.txt`
-
-### Deploy it on Fly.io
+## Deploy it on Fly.io
 Sign up for fly.io account at https://fly.io/dashboard
 
 First time launch:
