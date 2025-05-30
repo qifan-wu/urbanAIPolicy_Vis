@@ -7,14 +7,23 @@
     <h2>Select a category</h2>
     <form id="category-form" action="/" method="get" onsubmit="return redirectToCategory();">
         <label for="category">Choose a category:</label>
-        <select id="category" name="category">
-            <option value="Data Privacy and Security">Data Privacy and Security</option>
-            <option value="Public Service and Citizen Engagement">Public Service and Citizen Engagement</option>
-            <option value="Urban Management and Innovation">Urban Management and Innovation</option>
-            <option value="Prohibited or Restricted AI Use">Prohibited or Restricted AI Use</option>
-            <!-- Add more subcategories here -->
+
+        <select id="category" name="subcategory">
+            {% for option in all_categories %}
+                <option value="{{ option }}">{{ option }}</option>
+            {% endfor %}
         </select>
-        <button type="submit">Submit</button>
+
+        <!-- <button type="submit">Submit</button> -->
+
+        <script>
+            document.getElementById("category").addEventListener("change", function() {
+                const selected = this.value;
+                if (selected) {
+                    window.location.href = "/" + encodeURIComponent(selected);
+                }
+            });
+        </script>
     </form>
 
     <script>
