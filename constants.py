@@ -1,8 +1,8 @@
 import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PDFS_DIR = 'static/pdfs'
-RESULT_DB_FILE = 'static/data/ai_policy_analysis_local_0526.db'
-
+# RESULT_DB_FILE = 'static/data/ai_policy_analysis_local_0526.db'
+RESULT_DB_FILE = 'static/data/ai_policy_analysis_local_0526_fakepage.db'
 
 CHUNK_HIGHLIGHT_COLOR = (0.8, 0.8, 0.2) # yellow
 KEYWORD_HIGHLIGHT_COLOR = (0.7, 0, 0) # red

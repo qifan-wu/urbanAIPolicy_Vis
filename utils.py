@@ -55,7 +55,7 @@ def get_result_by_category(category):
     # grouped_df = df_category.groupby("filename")["chunk_text"].agg(list).reset_index()
     return df_category
 
-def get_text_by_file_category(filename, category):
+def get_cleaned_chunk_by_file_category(filename, category):
     '''
     Get all chunks text of category-relevant in a given document.
 
@@ -64,15 +64,21 @@ def get_text_by_file_category(filename, category):
 
     Returns
     -------
-    cleaned_lines (list of str):
-        List of cleaned lines from the chunks relevant to the given category in the specified document.
-        Each line is stripped of leading/trailing whitespace, internal spaces are collapsed, and empty lines are dropped.
+    result (list of dict):
+        dict item:
+            {
+            'chunk_cleaned_lines' (list of str):
+                List of cleaned lines from the chunks relevant to the given category in the specified document.
+                Each line is stripped of leading/trailing whitespace, internal spaces are collapsed, and empty lines are dropped.
+            'chunk_page' (int):
+                number of page this chunk is in pdf
+            }
     '''
     conn = sqlite3.connect(RESULT_DB_FILE)
     cursor = conn.cursor()
 
     query = """
-    SELECT Chunks.chunk_text
+    SELECT Chunks.chunk_text, Chunks.chunk_page_num
     FROM Classifications
     JOIN Chunks ON Classifications.chunk_id = Chunks.chunk_id
     JOIN Documents ON Classifications.doc_id = Documents.doc_id
@@ -86,58 +92,55 @@ def get_text_by_file_category(filename, category):
     # Close the connection
     conn.close()
 
-    # Clean each chunk: split on \n, strip whitespace, collapse internal spaces, drop empty lines
-    cleaned_lines = []
-    for chunk in df_category["chunk_text"]:
-        # print(chunk)
-        # print("===")
+    result = []
+
+    for _, row in df_category.iterrows():
+        chunk = row['chunk_text']
+        page_i = int(row['chunk_page_num'])
+        chunk_cleaned_lines = []
+
+        # lean each chunk: split on \n, strip whitespace, collapse internal spaces, drop empty lines
         lines = chunk.split('\n')
         for line in lines:
             normalized = re.sub(r'\s+', ' ', line.strip())
             normalized = re.sub(r'-$', '', normalized) #remove trailing -
             if normalized:
                 if len(normalized) > 1:
-                    cleaned_lines.append(normalized)
-    # print(len(cleaned_lines))
+                    chunk_cleaned_lines.append(normalized)
 
-    return cleaned_lines
+        result.append({
+            'chunk_cleaned_lines': chunk_cleaned_lines,
+            'chunk_page_i': page_i
+        })
 
-def highlight_lines_forward(doc, lines, rgb_color):
+    return result
+
+def highlight_lines_by_page(doc, relevant_lines_page, rgb_color):
     '''
     Highlight lines in the PDF document
 
     doc (fitz.Document): The PDF document to highlight lines in.
-    lines (list of str): List of lines to highlight in the document.
+    relevant_lines_page (list of dict): List of {cleaned lines in chunk, page number}
     rgb_color (tuple): RGB color for the highlights, e.g. (1, 0, 0) for red.
 
     Returns
     -------
     None
     '''
+    for chunk_info in relevant_lines_page:
+        cleaned_lines = chunk_info['chunk_cleaned_lines']
 
-    # brute force
-    # for line in lines:
-    #     for page in doc:
-    #         matches = page.search_for(line, quads=True, flags=0)  # case sensitive
-    #         for match in matches:
-    #             highlight = page.add_highlight_annot(match)
-    #             highlight.set_colors(stroke=rgb_color)
-    #             highlight.update()
+        # only search one page for given lines
+        page_index = chunk_info['chunk_page_i']
+        page = doc[page_index]
 
-    # forward search to reduce time
-    page_index_current = 0
-    num_pages = len(doc)
-    for line in lines:
-        for p_i in range(page_index_current, num_pages):
-            page = doc[p_i]
+        for line in cleaned_lines:
             matches = page.search_for(line, quads=True)
             if matches:
                 for match in matches:
                     highlight = page.add_highlight_annot(match)
                     highlight.set_colors(stroke=rgb_color)
                     highlight.update()
-                p_index_current = p_i
-                break
 
 def highlight_AI_keywords(doc, rgb_color):
     '''

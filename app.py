@@ -52,10 +52,9 @@ def highlight_pdf(filename, category):
     '''
     doc = read_pdf(filename)
 
-    relevant_lines = get_text_by_file_category(filename, category)
-
     # Highlight relevant lines and AI keywords
-    highlight_lines_forward(doc, relevant_lines, CHUNK_HIGHLIGHT_COLOR)
+    relevant_lines_page = get_cleaned_chunk_by_file_category(filename, category)
+    highlight_lines_by_page(doc, relevant_lines_page, CHUNK_HIGHLIGHT_COLOR)
     highlight_AI_keywords(doc, KEYWORD_HIGHLIGHT_COLOR)
 
     # Save to in-memory buffer
