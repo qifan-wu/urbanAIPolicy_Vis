@@ -22,13 +22,27 @@ def result_table(category):
     '''
     Render the result table for a specific category, including filename, category, count of matches and link to highlighted PDF
     '''
-    df_category = get_result_by_category(category)
-    df_category["file_link"] = df_category["filename"].apply(
-        lambda fname: f"/highlight/{fname}/{category}"
-    )
-    df_category["category"] = category
-    data = df_category.to_dict(orient="records")
-    return render_template("/category_table.html", data=data, category=category)
+    if category == "All":
+        # Combine all categories' results
+        all_df = []
+        for cat in SUBCATEGORIES:
+            df = get_result_by_category(cat)
+            df["file_link"] = df["filename"].apply(lambda fname: f"/highlight/{fname}/{cat}")
+            df["category"] = cat
+            all_df.append(df)
+
+        df_combined = pd.concat(all_df, ignore_index=True)
+        data = df_combined.to_dict(orient="records")
+        return render_template("/category_table.html", data=data, category="All Categories")
+
+    else:
+        df_category = get_result_by_category(category)
+        df_category["file_link"] = df_category["filename"].apply(
+            lambda fname: f"/highlight/{fname}/{category}"
+        )
+        df_category["category"] = category
+        data = df_category.to_dict(orient="records")
+        return render_template("/category_table.html", data=data, category=category)
 
 
 @app.route("/highlight/<filename>/<category>", methods=["GET"])
