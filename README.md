@@ -1,6 +1,6 @@
 ## Introduction
 This is a web tool to visualize AI-related urban planning document,
-deployed on [Fly.io](https://fly.io/apps/flyiotest-urban-policy). # TBD: change to your new fly.io app address
+deployed on https://flyiotest-urban-policy.fly.dev/. # TBD: change to your new fly.io app address
 
 
 ## Functions
@@ -49,7 +49,7 @@ Install dependencies using:
 (optional) Use virtual environment, and if you would like to install new dependencies, run in terminal to update requirements.txt:
 `pip freeze > requirements.txt`
 
-5. (if needed) Update the constant variable SUBCATEGORIES if it's changed, you can get all the unique subcategories by running the following code in a seperate python file
+5. (if needed) Update the constant variable SUBCATEGORIES if it's changed, you can get all the unique subcategories by running the following code in a seperate python script.
 ```
 conn = sqlite3.connect(RESULT_DB_FILE)
 cursor = conn.cursor()
@@ -61,14 +61,14 @@ df = pd.read_sql_query(query, conn)
 subcategories = df['subcategory'].tolist()
 ```
 
-6. Run locally
+6. Run locally with
 
 `python app.py`
 
 ## Deploy it on Fly.io
 Fly.io a lightweight and cost-effective platform for running backend apps. It supports Flask, SQLite, and file-based workflows, making it ideal for fast, flexible deployment with a public URL.
 
-### Steps:
+### Steps to deploy the app on fly.io:
 1. Sign up for fly.io account at https://fly.io/dashboard
 
 2. First time launch:
