@@ -1,6 +1,6 @@
 import sqlite3
 import pandas as pd
-from constants import RESULT_DB_FILE
+from constants import *
 import os
 import fitz  # PyMuPDF
 import io
@@ -8,8 +8,8 @@ import re
 
 def read_pdf(filename):
     """Reads a PDF file and returns pymupdf.Document."""
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    pdf_path = os.path.join(BASE_DIR, 'static', 'pdfs', os.path.basename(filename))
+
+    pdf_path = os.path.join(BASE_DIR, PDFS_DIR, os.path.basename(filename))
 
     if not os.path.exists(pdf_path):
         return abort(404, description="PDF file not found.")
@@ -17,7 +17,6 @@ def read_pdf(filename):
     doc = fitz.open(pdf_path)
 
     return doc
-
 
 def get_result_by_category(category):
     '''
@@ -56,8 +55,19 @@ def get_result_by_category(category):
     # grouped_df = df_category.groupby("filename")["chunk_text"].agg(list).reset_index()
     return df_category
 
-
 def get_text_by_file_category(filename, category):
+    '''
+    Get all chunks text of category-relevant in a given document.
+
+    filename(str): e.g. 'Q3-2022-CTO-Quarterly-Surveillance-Technology-Determination-Report.pdf__seattlegov-063a1ef3fafa3e91b84441ab73a730ff.pdf'
+    category (str): e.g. "Governance - Fairness, Bias & Transparency Standards"
+
+    Returns
+    -------
+    cleaned_lines (list of str):
+        List of cleaned lines from the chunks relevant to the given category in the specified document.
+        Each line is stripped of leading/trailing whitespace, internal spaces are collapsed, and empty lines are dropped.
+    '''
     conn = sqlite3.connect(RESULT_DB_FILE)
     cursor = conn.cursor()
 
@@ -76,15 +86,11 @@ def get_text_by_file_category(filename, category):
     # Close the connection
     conn.close()
 
-    # examples of row
-    # 'Page 3 of 5\n\n6. Public Records & City Records Management\n6.1. All records generated, used, or stored by Generative AI vendors or solutions may be considered\npublic records and must be disclosed upon request.',
-    # 'Note: this section refers to exceptions to this policy as it relates to generative AI tools that are\nin use by the City. It does not refer to requests for acquisition of non-standard applications or\ntechnologies. Non-compliance\nThe Chief Technology Officer (CTO) is responsible for compliance with this policy. Enforcement may be\nimposed in coordination with individual division directors and department leaders. Non-compliance may\nresult in department leaders imposing disciplinary action, restriction of access, or more severe penalties\nup to and including termination of employment or vendor contract. Related Standards and Policies\n• City Privacy Policy [POL-202]\n• Acquisition of Technology Resources [STA-209]\n• Information Security Policy [POL-201]\n• Data Classification Guideline [GUI-110]\nResponsibilities\nThe policy will be maintained through the Data Privacy, Accountability and Compliance (DPAC) division,\nowned by the Director of DPAC and City of Seattle Chief Privacy Officer. Their responsibilities include\ncreating and maintaining the generative AI risk and impact criteria and the documents and forms to\nsupport the exception review process for this technology. Document Control\nThis policy shall be effective on 11/1/2023 and shall be reviewed annually. Page 4 of 5\n\nVersion Content Contributors\nv 1.0 Initial Draft Reviewer:\nGreg Smith – Chief Information Security Officer (CISO)\nFinal Approver:\nJim Loter – Interim Chief Technology Officer (CTO)\nPage 5 of 5\n\nApproval Date\n10/23/2023\n10/23/2023']
-
     # Clean each chunk: split on \n, strip whitespace, collapse internal spaces, drop empty lines
     cleaned_lines = []
     for chunk in df_category["chunk_text"]:
-        print(chunk)
-        print("===")
+        # print(chunk)
+        # print("===")
         lines = chunk.split('\n')
         for line in lines:
             normalized = re.sub(r'\s+', ' ', line.strip())
@@ -92,13 +98,66 @@ def get_text_by_file_category(filename, category):
             if normalized:
                 if len(normalized) > 1:
                     cleaned_lines.append(normalized)
-    print(len(cleaned_lines))
+    # print(len(cleaned_lines))
 
     return cleaned_lines
+
+def highlight_lines_forward(doc, lines, rgb_color):
+    '''
+    Highlight lines in the PDF document
+
+    doc (fitz.Document): The PDF document to highlight lines in.
+    lines (list of str): List of lines to highlight in the document.
+    rgb_color (tuple): RGB color for the highlights, e.g. (1, 0, 0) for red.
+
+    Returns
+    -------
+    None
+    '''
+
+    # brute force
+    # for line in lines:
+    #     for page in doc:
+    #         matches = page.search_for(line, quads=True, flags=0)  # case sensitive
+    #         for match in matches:
+    #             highlight = page.add_highlight_annot(match)
+    #             highlight.set_colors(stroke=rgb_color)
+    #             highlight.update()
+
+    # forward search to reduce time
+    page_index_current = 0
+    num_pages = len(doc)
+    for line in lines:
+        for p_i in range(page_index_current, num_pages):
+            page = doc[p_i]
+            matches = page.search_for(line, quads=True)
+            if matches:
+                for match in matches:
+                    highlight = page.add_highlight_annot(match)
+                    highlight.set_colors(stroke=rgb_color)
+                    highlight.update()
+                p_index_current = p_i
+                break
+
+def highlight_AI_keywords(doc, rgb_color):
+    '''
+    Highlight AI-related keywords in the PDF document.
+
+    Returns
+    -------
+    None
+    '''
+    for ai_keyword in AI_KEYWORDS:
+        for page in doc:
+            matches = page.search_for(ai_keyword, quads=True)
+            for match in matches:
+                highlight = page.add_highlight_annot(match)
+                highlight.set_colors(stroke=rgb_color)
+                highlight.update()
 
 
 if __name__ == "__main__":
     category = "Governance - Fairness, Bias & Transparency Standards"
     filename = "Q3-2022-CTO-Quarterly-Surveillance-Technology-Determination-Report.pdf__seattlegov-063a1ef3fafa3e91b84441ab73a730ff.pdf"
     # get_result_by_category(category)
-    get_text_by_file_category(filename, category)
+    # get_text_by_file_category(filename, category)
