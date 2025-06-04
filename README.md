@@ -1,8 +1,13 @@
 ## Introduction
-This is a web tool to visualize AI-related urban planning document
+This is a web tool to visualize AI-related urban planning document,
+deployed on [Fly.io](https://fly.io/apps/flyiotest-urban-policy). # TBD: change to your new fly.io app address
+
 
 ## Functions
 A search box for user to select a category and return a table of relavant documents in format of a table, with information of document filename, match_count (how many chunks are identified as the given subcategory-related) and a link to open the pdf with category-relavant highlights
+
+Workflow: 1.find the context and location of chunks classified with specified category using pipeline result; 2.break chunk contend into lines and clean them; 3.loop to find the lines from the pages they're in, using fitz page.search_for and add_highlight_annot functions to find and highlight the relavent lines.
+
 
 ## Code Structure
 <pre>```
@@ -41,7 +46,7 @@ static/data
 Install dependencies using:
 `pip install -r requirements.txt`
 
-If you install new dependencies, run in terminal:
+(optional) Use virtual environment, and if you would like to install new dependencies, run in terminal to update requirements.txt:
 `pip freeze > requirements.txt`
 
 5. (if needed) Update the constant variable SUBCATEGORIES if it's changed, you can get all the unique subcategories by running the following code in a seperate python file
@@ -56,13 +61,20 @@ df = pd.read_sql_query(query, conn)
 subcategories = df['subcategory'].tolist()
 ```
 
-## Deploy it on Fly.io
-Sign up for fly.io account at https://fly.io/dashboard
+6. Run locally
 
-First time launch:
+`python app.py`
+
+## Deploy it on Fly.io
+Fly.io a lightweight and cost-effective platform for running backend apps. It supports Flask, SQLite, and file-based workflows, making it ideal for fast, flexible deployment with a public URL.
+
+### Steps:
+1. Sign up for fly.io account at https://fly.io/dashboard
+
+2. First time launch:
 `fly launch`
 
-Whenever you want to update your app
+3. Whenever you want to update your app
 run `fly deploy` in terminal
 
 See instructions details from https://fly.io/docs/reference/fly-launch/
